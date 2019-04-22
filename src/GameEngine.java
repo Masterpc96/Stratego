@@ -1,64 +1,155 @@
+import java.util.Scanner;
+
 public class GameEngine {
     private int size;
 
 
     int board[][];
 
+    private int firstGamerPoints = 0;
+
+    private int secondGamerPoints = 0;
+
+    private int gamerNumber;
+
+    private Scanner scanner;
+
+    private int row;
+
+    private int column;
+
+    private int insertionNumber;
+
+
     public GameEngine(int size) {
         this.size = size;
         board = new int[size][size];
+        gamerNumber = 1;
+        scanner = new Scanner(System.in);
+        print();
     }
 
+    public void move() {
+        while (insertionNumber != 2 * size) {
+            System.out.println("Gracz nr " + gamerNumber + " podaj miejsce wstawienia X");
+
+            System.out.print("Wiersz ");
+            row = scanner.nextInt();
+
+            System.out.print("Kolumna ");
+            column = scanner.nextInt();
+
+            while (row >= size || column >= size) {
+                System.out.println("Podano wartość z poza zakresu wprowadź wiersz i kolumnę jeszcze raz ");
+                System.out.print("Wiersz ");
+                row = scanner.nextInt();
+
+                System.out.print("Kolumna ");
+                column = scanner.nextInt();
+            }
+
+            while (board[row][column] == 1) {
+                System.out.println("X już znajduje się na tej pozycji. Proszę wybrać inną");
+                System.out.print("Wiersz ");
+                row = scanner.nextInt();
+
+                System.out.print("Kolumna ");
+                column = scanner.nextInt();
+            }
+
+
+            board[row][column] = 1;
+
+            insertionNumber++;
+            if (gamerNumber == 1) {
+                gamerNumber = 2;
+                firstGamerPoints += (checkVertical(column) + checkHorizontal(row) + checkCross(row, column));
+            } else {
+                gamerNumber = 1;
+                secondGamerPoints += (checkVertical(column) + checkHorizontal(row) + checkCross(row, column));
+            }
+            print();
+        }
+    }
+
+
     // this function check if column is full
-    public boolean checkVertical(int column) {
-        boolean flag = true;
+    private int checkVertical(int column) {
+        int points = 0;
         for (int i = 0; i < size; i++) {
             if (board[i][column] == 0) {
-                flag = false;
-                break;
+                return 0;
             }
+            points++;
         }
-        return flag;
+        return points;
     }
 
     // this function check if row is full
-    public boolean checkHorizontal(int row) {
-        boolean flag = true;
+    private int checkHorizontal(int row) {
+        int points = 0;
         for (int i = 0; i < size; i++) {
             if (board[row][i] == 0) {
-                flag = false;
-                break;
+                return 0;
             }
+            points++;
         }
-        return flag;
+        return points;
     }
 
-    // this function check if cross is full
-    // it check only in one direction
-    // if user put X in the middle we need to run this function twice
-    // the first run with rowStart equals 0
-    // the second run with rowStart equals game size
-    public boolean checkCross(int rowStart) {
-        boolean flag = true;
-        if (rowStart == 0) {
-            for (int i = 0; i < size; i++) {
-                if(board[i][i] == 0){
-                    flag = false;
-                    break;
-                }
+    // this function check if cross is full left and right direction
+    public int checkCross(int row, int column) {
+
+        int points = 0;
+        int _points = 0;
+
+        int _row = row;
+        int _column = column;
+
+        if (!(row == size-1 && column == 0) &&  !(column == size-1 && row == 0) ) {
+            while (row != 0) {
+                row--;
+                column--;
             }
-        }else if(rowStart == size){
-            for (int i = size; i > 0; i--) {
-                if(board[i-1][size-i] == 0){
-                    flag = false;
+
+
+            while (column < size) {
+                if (board[row][column] == 0) {
+                    points = 0;
                     break;
                 }
+                row++;
+                column++;
+                points++;
             }
         }
-        return flag;
+
+        if (!(_row == 0 && _column == 0) &&  !(_column == size-1 && _row == size-1) ) {
+            while (_row != 0) {
+                _row--;
+                _column++;
+            }
+
+
+            while (_column >= 0) {
+                if (board[_row][_column] == 0) {
+                    points = 0;
+                    break;
+                }
+                _row++;
+                _column--;
+                _points++;
+            }
+        }
+
+
+        return points + _points;
     }
 
     public void print() {
+
+        System.out.println("Gracz 1 " + firstGamerPoints);
+        System.out.println("Gracz 2 " + secondGamerPoints);
 
         // print header
         System.out.print("    |");
@@ -91,13 +182,12 @@ public class GameEngine {
             }
 
 
-
             System.out.print("|");
 
             for (int col = 0; col < size; col++) {
-                if(board[row][col] == 1 ){
+                if (board[row][col] == 1) {
                     System.out.print("  X  |");
-                }else if(board[row][col] == 0){
+                } else if (board[row][col] == 0) {
                     System.out.print("     |");
                 }
 
